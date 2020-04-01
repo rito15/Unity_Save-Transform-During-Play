@@ -13,6 +13,8 @@ namespace Rito.Conveniences
     [ExecuteInEditMode]
     public class SaveTransformDuringPlay : MonoBehaviour
     {
+        #region Fields
+
         /// <summary> 기능 On/Off </summary>
         public bool _on = true;
 
@@ -21,7 +23,26 @@ namespace Rito.Conveniences
 
         private bool _onEditorMode = false;
 
+        #endregion
+
+        #region Unity Callbacks
+
         private void OnGUI()
+        {
+            OnGUI_EditorOnly();
+        }
+
+        private void OnApplicationQuit()
+        {
+            OnApplicationQuit_EditorOnly();
+        }
+
+        #endregion
+
+        #region EditorOnly Unity Callbacks
+
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void OnGUI_EditorOnly()
         {
             if (!Application.isPlaying)
             {
@@ -41,7 +62,8 @@ namespace Rito.Conveniences
         }
 
         // 플레이모드가 종료되는 순간 JSON으로 저장
-        private void OnApplicationQuit()
+        [System.Diagnostics.Conditional("UNITY_EDITOR")]
+        private void OnApplicationQuit_EditorOnly()
         {
 #if USE_DEBUG
         Debug.Log("Method Call : OnApplicationQuit()");
@@ -54,6 +76,10 @@ namespace Rito.Conveniences
 
             SavePrefs(nameof(Prefs._tmaOn), _on ? Yes : No);
         }
+
+        #endregion
+
+        #region Methods
 
         // 에디터모드가 실행되는 순간 호출
         private void OnEditorMode()
@@ -99,6 +125,9 @@ namespace Rito.Conveniences
             JsonTransformDataManager.SaveTransformDataToJSON(savedData, GetInstanceID());
         }
 
+        #endregion
+
+        #region Tiny Methods
 
         private void SavePrefs(in string prefName, in int yesOrNo)
         {
@@ -123,5 +152,7 @@ namespace Rito.Conveniences
             /// <summary> 기능 사용 여부 </summary>
             _tmaOn
         }
+
+        #endregion
     }
 }

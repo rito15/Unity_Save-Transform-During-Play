@@ -6,7 +6,10 @@ namespace Rito.Conveniences
 {
     public static class JsonTransformDataManager
     {
-        private static string FolderPath => Application.dataPath + "/Save Transform During Play/Data/";
+        private static string GetRootPath([System.Runtime.CompilerServices.CallerFilePath] string path = "")
+            => path.Substring(0, path.LastIndexOf('\\') + 1);
+
+        private static string FolderPath => GetRootPath() + "Data/";
         private static string GetFullPath(int id) => FolderPath + $"{id}.json";
 
         public static void SaveTransformDataToJSON(in TransformData data, int id)
