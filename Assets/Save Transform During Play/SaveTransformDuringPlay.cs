@@ -6,7 +6,7 @@ using UnityEngine;
 public class SaveTransformDuringPlay : MonoBehaviour
 {
     /// <summary> 기능 On/Off </summary>
-    public bool _on;
+    public bool _on = true;
 
     private const int Yes = 1;
     private const int No = 0;
