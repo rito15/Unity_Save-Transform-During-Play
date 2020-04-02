@@ -2,12 +2,19 @@
 
 using UnityEngine;
 
-// 2020. 04. 01. 작성
-// 제작자 : Rito
-// 기능   : 플레이 모드에서 Transform을 변경한 경우, 플레이 모드가 종료되어도 변경사항을 적용할 수 있게 합니다.
-// 사용법 : 원하는 게임오브젝트에 SaveTransformDuringPlay 컴포넌트를 추가합니다.
-//          인스펙터에서 On 변수를 체크/해제함으로써 언제든 기능을 켜고 끌 수 있습니다.
+/*
 
+ 작성일 : 2020. 04. 01. 
+ 제작자 : Rito
+ 기능   : 플레이 모드에서 Transform을 변경한 경우, 플레이 모드가 종료되어도 변경사항을 적용할 수 있게 합니다.
+
+ * 사용법
+  - 원하는 게임오브젝트에 SaveTransformDuringPlay 컴포넌트를 추가합니다.
+  - 인스펙터에서 On 변수를 체크/해제함으로써 언제든 기능을 켜고 끌 수 있습니다.
+  - 인스펙터의 positionSpace를 설정하여 플레이모드 해제 시 localPosition 또는 globalPosition 중 하나를 선택하여 적용할 수 있습니다.
+  - 인스펙터의 rotationSpace를 설정하여 플레이모드 해제 시 localRotation 또는 globalRotation 중 하나를 선택하여 적용할 수 있습니다.
+
+*/
 namespace Rito.Conveniences
 {
     [ExecuteInEditMode]
@@ -18,14 +25,27 @@ namespace Rito.Conveniences
         /// <summary> 기능 On/Off </summary>
         public bool _on = true;
 
-        private const int Yes = 1;
-        private const int No = 0;
+        [Header("Options")]
+        public PositionSpace _positionSpace = default;
+        public RotationSpace _rotationSpace = default;
+
+        private ScaleSpace   _scaleSpace    = default; // TODO : lossy
+
+        private const int True  = 1;
+        private const int False = 0;
+        private const int World = 1;
+        private const int Local = 0;
 
         private bool _onEditorMode = false;
 
         #endregion
 
         #region Unity Callbacks
+
+        private void Reset()
+        {
+            _on = true;
+        }
 
         private void OnGUI()
         {
@@ -56,7 +76,7 @@ namespace Rito.Conveniences
                 }
 
                 // 플레이모드가 종료되고, 에디터모드가 시작된 순간에 트랜스폼 변경사항 적용
-                if (_on && CheckPrefs(nameof(Prefs._tmApplied), No))
+                if (_on && CheckPrefs(nameof(Prefs._stApplied), False))
                     ApplyModifications();
             }
         }
@@ -71,10 +91,12 @@ namespace Rito.Conveniences
             if (_on)
             {
                 JsonTransformDataManager.SaveTransformDataToJSON(new TransformData(transform), GetInstanceID());
-                SavePrefs(nameof(Prefs._tmApplied), No);
+                SavePrefs(nameof(Prefs._stApplied), False);
             }
 
-            SavePrefs(nameof(Prefs._tmaOn), _on ? Yes : No);
+            SavePrefs(nameof(Prefs._stOn), _on ? True : False);
+            SavePrefs(nameof(Prefs._stPosSpace), _positionSpace.Equals(PositionSpace.World) ? World : Local);
+            SavePrefs(nameof(Prefs._stRotSpace), _rotationSpace.Equals(RotationSpace.World) ? World : Local);
         }
 
         #endregion
@@ -87,24 +109,23 @@ namespace Rito.Conveniences
 #if USE_DEBUG
         Debug.Log("Method Call : OnEditorMode()");
 #endif
-            // 플레이 도중 _on : false -> true로 바꾼 경우
-            if (!_on && CheckPrefs(nameof(Prefs._tmaOn), Yes))
+            // 플레이 도중 _on 변수를 바꾼 경우
+            if (_on.XOR(CheckPrefs(nameof(Prefs._stOn), True)))
             {
-                _on = true;
-
-#if USE_DEBUG
-            Debug.Log("플레이 도중 기능 ON");
-#endif
+                _on = !_on;
             }
 
-            // 플레이 도중 _on : true -> false 바꾼 경우
-            else if (_on && CheckPrefs(nameof(Prefs._tmaOn), No))
+            if(_positionSpace.Equals(PositionSpace.Local).XOR(CheckPrefs(nameof(Prefs._stPosSpace), Local)))
             {
-                _on = false;
-
 #if USE_DEBUG
-            Debug.Log("플레이 도중 기능 OFF");
+                Debug.Log("Pos : " + _positionSpace + " | " + (CheckPrefs(nameof(Prefs._stPosSpace), Local) ? "Local" : "Global"));
 #endif
+                _positionSpace.Reverse();
+            }
+
+            if(_rotationSpace.Equals(RotationSpace.Local).XOR(CheckPrefs(nameof(Prefs._stRotSpace), Local)))
+            {
+                _rotationSpace.Reverse();
             }
         }
 
@@ -118,39 +139,42 @@ namespace Rito.Conveniences
             if (savedData.Equals(TransformData.Null) || savedData.isApplied || !enabled || !_on)
                 return;
 
-            savedData.Load(transform);
-            SavePrefs(nameof(Prefs._tmApplied), Yes);
-
+            savedData.Load(transform, _positionSpace, _rotationSpace, _scaleSpace);
             savedData.isApplied = true;
             JsonTransformDataManager.SaveTransformDataToJSON(savedData, GetInstanceID());
+
+            SavePrefs(nameof(Prefs._stApplied), _on ? True : False);
         }
 
-        #endregion
+#endregion
 
         #region Tiny Methods
 
-        private void SavePrefs(in string prefName, in int yesOrNo)
+        private void SavePrefs(in string prefName, in int answer)
         {
 #if USE_DEBUG
         Debug.Log($"Method Call : SavePrefs({prefName})");
 #endif
-            PlayerPrefs.SetInt(GetInstanceID() + prefName, yesOrNo);
+            PlayerPrefs.SetInt(GetInstanceID() + prefName, answer);
         }
 
-        private bool CheckPrefs(in string prefName, int yesOrNo)
+        private bool CheckPrefs(in string prefName, int answer)
         {
 #if USE_DEBUG
         Debug.Log($"Method Call : CheckPrefs({prefName})");
 #endif
-            return PlayerPrefs.GetInt(GetInstanceID() + prefName).Equals(yesOrNo);
+            return PlayerPrefs.GetInt(GetInstanceID() + prefName).Equals(answer);
         }
 
         private enum Prefs
         {
             /// <summary> Transform 변경사항이 성공적으로 적용됨 </summary>
-            _tmApplied,
+            _stApplied,
             /// <summary> 기능 사용 여부 </summary>
-            _tmaOn
+            _stOn,
+
+            _stPosSpace,
+            _stRotSpace,
         }
 
         #endregion
