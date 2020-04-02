@@ -60,6 +60,7 @@ crashlytics-build.properties
 
 # Additions by Rito
 *.cmd
+*.cmd.meta
 /[Aa]ssets/Asset Store/
 /[Aa]ssets/_*
 /[Aa]ssets/Save Transform During Play/Include/Data/*
