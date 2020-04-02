@@ -1,4 +1,5 @@
-﻿#define USE_DEBUG_
+﻿#define DEBUG_LV1_ // Debug All
+#define DEBUG_LV2_
 
 using UnityEngine;
 
@@ -36,8 +37,6 @@ namespace Rito.Conveniences
         private const int World = 1;
         private const int Local = 0;
 
-        private bool _onEditorMode = false;
-
         #endregion
 
         #region Unity Callbacks
@@ -66,18 +65,37 @@ namespace Rito.Conveniences
         {
             if (!Application.isPlaying)
             {
-#if USE_DEBUG
-            Debug.Log("Method Call : OnGUI(), Editor Mode");
+#if DEBUG_LV1
+            Debug.Log($"{name} : OnGUI(), Editor Mode");
 #endif
-                if (_onEditorMode == false)
+                // 부모 -> 자식 순서대로 차근차근 적용(World Space 역순 적용 문제 해결)
+                if (transform.parent != null && transform.parent.gameObject != null)
                 {
-                    OnEditorMode();
-                    _onEditorMode = true;
+                    var parentTr = transform.parent;
+                    var parentSTDP = parentTr.GetComponent<SaveTransformDuringPlay>();
+                    if(parentSTDP != null && parentSTDP._on)
+                    {
+                        if (CheckPrefs(nameof(Prefs._OnEditor), False, parentTr.gameObject))
+                        {
+#if DEBUG_LV2
+                            Debug.Log($"{name} : 대기 - 부모 번호 : {parentTr.gameObject.GetInstanceID()}");
+#endif
+                            return;
+                        }
+                    }
                 }
 
-                // 플레이모드가 종료되고, 에디터모드가 시작된 순간에 트랜스폼 변경사항 적용
-                if (_on && CheckPrefs(nameof(Prefs._stApplied), False))
-                    ApplyModifications();
+                // OnEditorMode() 1회만 실행
+                if (CheckPrefs(nameof(Prefs._OnEditor), False))
+                {
+                    OnEditorMode();
+                    SavePrefs(nameof(Prefs._OnEditor), True);
+                }
+#if DEBUG_LV2
+                Debug.Log($"{name} : _OnEditor : {CheckPrefs(nameof(Prefs._OnEditor), True)} - 번호 : {gameObject.GetInstanceID()}");
+                if(transform.parent != null)
+                    Debug.Log($"{name} : 내 번호 : {gameObject.GetInstanceID()}, 부모 번호 : {transform.parent.gameObject.GetInstanceID()}");
+#endif
             }
         }
 
@@ -85,30 +103,37 @@ namespace Rito.Conveniences
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         private void OnApplicationQuit_EditorOnly()
         {
-#if USE_DEBUG
-        Debug.Log("Method Call : OnApplicationQuit()");
+#if DEBUG_LV1
+        Debug.Log($"{name} : OnApplicationQuit()");
 #endif
             if (_on)
             {
-                JsonTransformDataManager.SaveTransformDataToJSON(new TransformData(transform), GetInstanceID());
-                SavePrefs(nameof(Prefs._stApplied), False);
+                JsonManager.SaveTransformDataToJSON(new TransformData(transform), GetInstanceID());
             }
 
+            // 종료 순간의 인스펙터 값들 저장
             SavePrefs(nameof(Prefs._stOn), _on ? True : False);
             SavePrefs(nameof(Prefs._stPosSpace), _positionSpace.Equals(PositionSpace.World) ? World : Local);
             SavePrefs(nameof(Prefs._stRotSpace), _rotationSpace.Equals(RotationSpace.World) ? World : Local);
+
+            // OnEditor() 1회 호출용
+            SavePrefs(nameof(Prefs._OnEditor), False);
         }
 
         #endregion
 
         #region Methods
 
-        // 에디터모드가 실행되는 순간 호출
+        // 에디터모드가 실행되는 순간 1회 호출
         private void OnEditorMode()
         {
-#if USE_DEBUG
-        Debug.Log("Method Call : OnEditorMode()");
+#if DEBUG_LV2
+            Debug.Log($"{name} : OnEditorMode()");
 #endif
+#if DEBUG_LV1
+        Debug.Log($"{name} : OnEditorMode()");
+#endif
+
             // 플레이 도중 _on 변수를 바꾼 경우
             if (_on.XOR(CheckPrefs(nameof(Prefs._stOn), True)))
             {
@@ -117,7 +142,7 @@ namespace Rito.Conveniences
 
             if(_positionSpace.Equals(PositionSpace.Local).XOR(CheckPrefs(nameof(Prefs._stPosSpace), Local)))
             {
-#if USE_DEBUG
+#if DEBUG_LV1
                 Debug.Log("Pos : " + _positionSpace + " | " + (CheckPrefs(nameof(Prefs._stPosSpace), Local) ? "Local" : "Global"));
 #endif
                 _positionSpace.Reverse();
@@ -127,23 +152,25 @@ namespace Rito.Conveniences
             {
                 _rotationSpace.Reverse();
             }
+
+
+            // 기능 활성화 상태라면 트랜스폼 변경사항 적용
+            if (_on)
+                ApplyModifications();
         }
 
         private void ApplyModifications()
         {
-#if USE_DEBUG
-        Debug.Log("Method Call : ApplyModifications()");
+#if DEBUG_LV1
+        Debug.Log($"{name} : ApplyModifications()");
 #endif
-            TransformData savedData = JsonTransformDataManager.LoadTransformDataFromJSON(GetInstanceID());
+            TransformData savedData = JsonManager.LoadTransformDataFromJSON(GetInstanceID());
 
-            if (savedData.Equals(TransformData.Null) || savedData.isApplied || !enabled || !_on)
+            if (savedData.Equals(TransformData.Null) || !enabled || !_on)
                 return;
 
             savedData.Load(transform, _positionSpace, _rotationSpace, _scaleSpace);
-            savedData.isApplied = true;
-            JsonTransformDataManager.SaveTransformDataToJSON(savedData, GetInstanceID());
-
-            SavePrefs(nameof(Prefs._stApplied), _on ? True : False);
+            JsonManager.SaveTransformDataToJSON(savedData, GetInstanceID());
         }
 
 #endregion
@@ -152,24 +179,30 @@ namespace Rito.Conveniences
 
         private void SavePrefs(in string prefName, in int answer)
         {
-#if USE_DEBUG
-        Debug.Log($"Method Call : SavePrefs({prefName})");
+#if DEBUG_LV1
+        Debug.Log($$"{name} : SavePrefs({prefName})");
 #endif
-            PlayerPrefs.SetInt(GetInstanceID() + prefName, answer);
+            PlayerPrefs.SetInt(gameObject.GetInstanceID() + prefName, answer);
         }
 
-        private bool CheckPrefs(in string prefName, int answer)
+        private bool CheckPrefs(in string prefName, in int answer)
         {
-#if USE_DEBUG
-        Debug.Log($"Method Call : CheckPrefs({prefName})");
+#if DEBUG_LV1
+        Debug.Log($$"{name} : CheckPrefs({prefName})");
 #endif
-            return PlayerPrefs.GetInt(GetInstanceID() + prefName).Equals(answer);
+            return PlayerPrefs.GetInt(gameObject.GetInstanceID() + prefName).Equals(answer);
+        }
+
+        private bool CheckPrefs(in string prefName, in int answer, in GameObject targetGO)
+        {
+            return PlayerPrefs.GetInt(targetGO.GetInstanceID() + prefName).Equals(answer);
         }
 
         private enum Prefs
         {
-            /// <summary> Transform 변경사항이 성공적으로 적용됨 </summary>
-            _stApplied,
+            /// <summary> 플레이 모드 종료 후, 에디터 모드 실행됨 </summary>
+            _OnEditor,
+
             /// <summary> 기능 사용 여부 </summary>
             _stOn,
 

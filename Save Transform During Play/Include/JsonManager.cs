@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Rito.Conveniences
 {
-    public static class JsonTransformDataManager
+    public static class JsonManager
     {
         #region Get Paths
 

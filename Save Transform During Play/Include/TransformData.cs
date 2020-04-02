@@ -12,7 +12,6 @@ namespace Rito.Conveniences
 
         public Vector3 globalPosition;
         public Quaternion globalRotation;
-        public bool isApplied;
 
         // 생성자
         public TransformData(in Transform transform)
@@ -23,8 +22,6 @@ namespace Rito.Conveniences
 
             globalPosition = transform.position;
             globalRotation = transform.rotation;
-
-            isApplied = false;
         }
 
         /// <summary> Struct -> Transform </summary>
@@ -48,12 +45,11 @@ namespace Rito.Conveniences
         private static TransformData _null
             = new TransformData
             {
-                localPosition = Vector3.zero,
+                localPosition = Vector3.negativeInfinity,
                 localRotation = Quaternion.identity,
                 localScale = Vector3.one,
-                globalPosition = Vector3.zero,
+                globalPosition = Vector3.negativeInfinity,
                 globalRotation = Quaternion.identity,
-                isApplied = false
             };
         public static TransformData Null => _null;
     }
