@@ -15,7 +15,7 @@ namespace Rito.Conveniences
 
     public enum ScaleSpace
     {
-        // TODO : World
+        World,
         Local,
     }
 }

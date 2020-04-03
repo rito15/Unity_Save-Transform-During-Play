@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Rito.Conveniences
 {
     [Serializable]
-    public struct TransformData
+    public class TransformData : CommonData
     {
         public Vector3 localPosition;
         public Quaternion localRotation;
@@ -12,6 +12,9 @@ namespace Rito.Conveniences
 
         public Vector3 globalPosition;
         public Quaternion globalRotation;
+        public Vector3 globalScale;
+
+        public TransformData() { }
 
         // 생성자
         public TransformData(in Transform transform)
@@ -22,10 +25,11 @@ namespace Rito.Conveniences
 
             globalPosition = transform.position;
             globalRotation = transform.rotation;
+            globalScale = transform.lossyScale;
         }
 
         /// <summary> Struct -> Transform </summary>
-        public void Load(in Transform transform, PositionSpace posSpace, RotationSpace rotSpace, ScaleSpace sclSpace)
+        public void ApplyToTransform(in Transform transform, PositionSpace posSpace, RotationSpace rotSpace, ScaleSpace sclSpace)
         {
             if (posSpace.Equals(PositionSpace.Local))
                 transform.localPosition = localPosition;
@@ -39,18 +43,11 @@ namespace Rito.Conveniences
 
             if (sclSpace.Equals(ScaleSpace.Local))
                 transform.localScale = localScale;
-        }
-
-        // null 패턴
-        private static TransformData _null
-            = new TransformData
+            else
             {
-                localPosition = Vector3.negativeInfinity,
-                localRotation = Quaternion.identity,
-                localScale = Vector3.one,
-                globalPosition = Vector3.negativeInfinity,
-                globalRotation = Quaternion.identity,
-            };
-        public static TransformData Null => _null;
+                transform.localScale = localScale;
+                // => Lossy 보정
+            }
+        }
     }
 }
