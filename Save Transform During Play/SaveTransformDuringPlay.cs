@@ -1,8 +1,4 @@
-﻿#define DEBUG_LV1_ // Debug All
-#define DEBUG_LV2_ // Debug Parent -> Child Order
-#define DEBUG_LV3_ // Debug Global Scale
-
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Rito.Conveniences
 {
@@ -38,8 +34,6 @@ namespace Rito.Conveniences
 
         private const int True  = 1;
         private const int False = 0;
-        private const int World = 1;
-        private const int Local = 0;
 
         #endregion
 
@@ -64,9 +58,6 @@ namespace Rito.Conveniences
         {
             if (!Application.isPlaying)
             {
-#if DEBUG_LV1
-            Debug.Log($"{name} : OnGUI(), Editor Mode");
-#endif
                 // 부모 -> 자식 순서대로 차근차근 적용(World Space 역순 적용 문제 해결)
                 if (transform.parent != null)
                 {
@@ -75,12 +66,7 @@ namespace Rito.Conveniences
                     if(parentSTDP != null && parentSTDP._on)
                     {
                         if (CheckPrefs(nameof(Prefs._OnEditor), False, parentTr))
-                        {
-#if DEBUG_LV2
-                            Debug.Log($"{name} : 대기 - 부모 번호 : {parentTr.transform.GetInstanceID()}");
-#endif
                             return;
-                        }
                     }
                 }
 
@@ -90,31 +76,17 @@ namespace Rito.Conveniences
                     OnEditorMode();
                     SavePrefs(nameof(Prefs._OnEditor), True);
                 }
-#if DEBUG_LV2
-                Debug.Log($"{name} : _OnEditor : {CheckPrefs(nameof(Prefs._OnEditor), True)} - 번호 : {transform.GetInstanceID()}");
-                if(transform.parent != null)
-                    Debug.Log($"{name} : 내 번호 : {transform.GetInstanceID()}, 부모 번호 : {transform.parent.transform.GetInstanceID()}");
-#endif
             }
         }
 
-        // 플레이모드가 종료되는 순간
         [System.Diagnostics.Conditional("UNITY_EDITOR")]
         private void OnApplicationQuit_EditorOnly()
         {
-#if DEBUG_LV1
-        Debug.Log($"{name} : OnApplicationQuit()");
-#endif
-            // 기능이 동작 중이라면 JSON으로 저장
             if (_on)
-            {
                 JsonManager.SaveDataToJSON(new TransformData(transform), transform.GetInstanceID());
-            }
 
-            // 종료 순간의 인스펙터 값들 저장
             SaveInspectorOptionsToJSON();
 
-            // OnEditor() 1회 호출용
             SavePrefs(nameof(Prefs._OnEditor), False);
         }
 
@@ -122,28 +94,16 @@ namespace Rito.Conveniences
 
         #region Methods
 
-        // 에디터모드가 실행되는 순간 1회 호출
         private void OnEditorMode()
         {
-#if DEBUG_LV2
-            Debug.Log($"{name} : OnEditorMode()");
-#endif
-#if DEBUG_LV1
-        Debug.Log($"{name} : OnEditorMode()");
-#endif
-            // 저장했던 인스펙터 옵션들 다시 로드
             LoadInspectorOptionsFromJSON();
 
-            // 기능 활성화 상태라면 트랜스폼 변경사항 적용
             if (_on)
                 ApplyModifications();
         }
 
         private void ApplyModifications()
         {
-#if DEBUG_LV1
-        Debug.Log($"{name} : ApplyModifications()");
-#endif
             var savedData = (JsonManager.LoadDataFromJSON<TransformData>(transform.GetInstanceID())) as TransformData;
 
             if (savedData == null || savedData.Equals(CommonData.Null) || !enabled || !_on)
@@ -160,12 +120,6 @@ namespace Rito.Conveniences
                 (float x, float y, float z) factor
                     = (savedLossy.x / nowLossy.x, savedLossy.y / nowLossy.y, savedLossy.z / nowLossy.z);
 
-#if DEBUG_LV3
-                Debug.Log($"Saved : {savedLossy}");
-                Debug.Log($"Now   : {nowLossy}");
-                Debug.Log($"Factor : {factor}");
-#endif
-
                 transform.localScale = new Vector3(
                         transform.localScale.x * factor.x,
                         transform.localScale.y * factor.y,
@@ -176,7 +130,7 @@ namespace Rito.Conveniences
 
         #endregion
 
-        #region Tiny Methods
+        #region Tiny
 
         private void SaveInspectorOptionsToJSON()
         {
@@ -199,17 +153,11 @@ namespace Rito.Conveniences
 
         private void SavePrefs(in string prefName, in int answer)
         {
-#if DEBUG_LV1
-        Debug.Log($$"{name} : SavePrefs({prefName})");
-#endif
             PlayerPrefs.SetInt(transform.GetInstanceID() + prefName, answer);
         }
 
         private bool CheckPrefs(in string prefName, in int answer)
         {
-#if DEBUG_LV1
-        Debug.Log($$"{name} : CheckPrefs({prefName})");
-#endif
             return PlayerPrefs.GetInt(transform.GetInstanceID() + prefName).Equals(answer);
         }
 
