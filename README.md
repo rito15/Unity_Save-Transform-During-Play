@@ -14,13 +14,13 @@
   - 플레이 모드에서 ```On```, 각각의 ```Space``` 옵션을 수정해도 수정사항이 적용됩니다.
   
   - 인스펙터에서 ```Position Space```를 ```Local``` 또는 ```World```로 설정하여,
-    <br> 플레이모드가 종료될 때 localPosition과 globalPosition 중 어떤 값을 보존할지 선택할 수 있습니다.
+    <br> 플레이모드가 종료될 때 ```transform.localPosition```과 ```transform.position``` 중 어떤 값을 보존할지 선택할 수 있습니다.
   
   - 인스펙터에서 ```Rotation Space```를 ```Local``` 또는 ```World```로 설정하여,
-    <br> 플레이모드가 종료될 때 localRotation과 globalRotation 중 어떤 값을 보존할지 선택할 수 있습니다.
+    <br> 플레이모드가 종료될 때 ```transform.localRotation```과 ```transform.rotation``` 중 어떤 값을 보존할지 선택할 수 있습니다.
   
   - 인스펙터에서 ```Scale Space```를 ```Local``` 또는 ```World```로 설정하여,
-    <br> 플레이모드가 종료될 때 localScale과 lossyScale 중 어떤 값을 보존할지 선택할 수 있습니다.
+    <br> 플레이모드가 종료될 때 ```transform.localScale```과 ```transform.lossyScale``` 중 어떤 값을 보존할지 선택할 수 있습니다.
   
   <br>
   
