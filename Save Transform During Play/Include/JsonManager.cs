@@ -11,35 +11,20 @@ namespace Rito.Conveniences
             => path.Substring(0, path.LastIndexOf('\\') + 1);
 
         private static string FolderPath => GetRootPath() + "Data/";
-        private static string GetFullPath(CommonData data, int id)
-        {
-            switch (data)
-            {
-                case TransformData td:
-                    return FolderPath + $"{id}_Transform.json";
-                case SpaceData sd:
-                    return FolderPath + $"{id}_Space.json";
-                default:
-                    return FolderPath + $"{id}.json";
-            }
-        }
-        private static string GetFullPath<T>(int id) where T : CommonData
-        {
-            if(typeof(T).IsEquivalentTo(typeof(TransformData)))
-                return FolderPath + $"{id}_Transform.json";
 
-            else if(typeof(T).IsEquivalentTo(typeof(SpaceData)))
-                return FolderPath + $"{id}_Space.json";
+        private static string GetFullPath<T>(in int id) where T : IJsonData
+        {
+            string fileName = typeof(T).ToString();
+            fileName = fileName.Substring(fileName.LastIndexOf('.') + 1);
 
-            else
-                return FolderPath + $"{id}.json";
+            return $"{FolderPath}{id}_{fileName}.json";
         }
 
         #endregion
 
         #region Methods - Common
 
-        public static void SaveDataToJSON(in CommonData data, in int id)
+        public static void SaveDataToJSON(in IJsonData data, in int id)
         {
             DirectoryInfo di = new DirectoryInfo(FolderPath);
             if (di.Exists == false) di.Create();
@@ -56,26 +41,17 @@ namespace Rito.Conveniences
             }
         }
 
-        public static CommonData LoadDataFromJSON<T>(in int id) where T : CommonData
+        public static IJsonData LoadDataFromJSON<T>(in int id) where T : IJsonData
         {
             string filePath = GetFullPath<T>(id);
 
             // 파일 미존재 예외처리
             if (File.Exists(filePath) == false)
-                return CommonData.Null;
+                return null;
 
             // 정상 로드
             string jsonStr = File.ReadAllText(filePath);
-
-            if(typeof(T).IsEquivalentTo(typeof(TransformData)))
-                return JsonUtility.FromJson<TransformData>(jsonStr);
-
-            else if(typeof(T).IsEquivalentTo(typeof(SpaceData)))
-                return JsonUtility.FromJson<SpaceData>(jsonStr);
-
-            else
-                return JsonUtility.FromJson<CommonData>(jsonStr);
-
+            return JsonUtility.FromJson<T>(jsonStr);
         }
 
         #endregion

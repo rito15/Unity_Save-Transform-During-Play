@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Rito.Conveniences
 {
     [Serializable]
-    public class TransformData : CommonData
+    public class TransformData : IJsonData
     {
         public Vector3 localPosition;
         public Quaternion localRotation;
@@ -29,7 +29,7 @@ namespace Rito.Conveniences
         }
 
         /// <summary> Struct -> Transform </summary>
-        public void ApplyToTransform(in Transform transform, PositionSpace posSpace, RotationSpace rotSpace, ScaleSpace sclSpace)
+        public void ApplyToTransform(in Transform transform, in PositionSpace posSpace, in RotationSpace rotSpace, in ScaleSpace sclSpace)
         {
             if (posSpace.Equals(PositionSpace.Local))
                 transform.localPosition = localPosition;
@@ -41,13 +41,8 @@ namespace Rito.Conveniences
             else
                 transform.rotation = globalRotation;
 
-            if (sclSpace.Equals(ScaleSpace.Local))
-                transform.localScale = localScale;
-            else
-            {
-                transform.localScale = localScale;
-                // => Lossy 보정
-            }
+            transform.localScale = localScale;
+            // => if lossy : Some Adjustments
         }
     }
 }

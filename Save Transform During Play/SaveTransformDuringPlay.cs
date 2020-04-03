@@ -35,6 +35,17 @@ namespace Rito.Conveniences
         private const int True  = 1;
         private const int False = 0;
 
+        private int _transformID = -999999;
+        private int TransformID
+        {
+            get
+            {
+                if (_transformID.Equals(-999999))
+                    _transformID = transform.GetInstanceID();
+                return _transformID;
+            }
+        }
+
         #endregion
 
         #region Unity Callbacks
@@ -83,7 +94,7 @@ namespace Rito.Conveniences
         private void OnApplicationQuit_EditorOnly()
         {
             if (_on)
-                JsonManager.SaveDataToJSON(new TransformData(transform), transform.GetInstanceID());
+                JsonManager.SaveDataToJSON(new TransformData(transform), TransformID);
 
             SaveInspectorOptionsToJSON();
 
@@ -104,9 +115,9 @@ namespace Rito.Conveniences
 
         private void ApplyModifications()
         {
-            var savedData = (JsonManager.LoadDataFromJSON<TransformData>(transform.GetInstanceID())) as TransformData;
+            var savedData = (JsonManager.LoadDataFromJSON<TransformData>(TransformID)) as TransformData;
 
-            if (savedData == null || savedData.Equals(CommonData.Null) || !enabled || !_on)
+            if (savedData == null || !enabled || !_on)
                 return;
 
             savedData.ApplyToTransform(transform, _positionSpace, _rotationSpace, _scaleSpace);
@@ -135,14 +146,14 @@ namespace Rito.Conveniences
         private void SaveInspectorOptionsToJSON()
         {
             SpaceData sd = new SpaceData(_on, _positionSpace, _rotationSpace, _scaleSpace);
-            JsonManager.SaveDataToJSON(sd, transform.GetInstanceID());
+            JsonManager.SaveDataToJSON(sd, TransformID);
         }
 
         private void LoadInspectorOptionsFromJSON()
         {
-            var savedOptions = JsonManager.LoadDataFromJSON<SpaceData>(transform.GetInstanceID()) as SpaceData;
+            var savedOptions = JsonManager.LoadDataFromJSON<SpaceData>(TransformID) as SpaceData;
 
-            if (savedOptions == null || savedOptions.Equals(CommonData.Null))
+            if (savedOptions == null)
                 return;
 
             _on = savedOptions.isOn;
@@ -153,12 +164,12 @@ namespace Rito.Conveniences
 
         private void SavePrefs(in string prefName, in int answer)
         {
-            PlayerPrefs.SetInt(transform.GetInstanceID() + prefName, answer);
+            PlayerPrefs.SetInt(TransformID + prefName, answer);
         }
 
         private bool CheckPrefs(in string prefName, in int answer)
         {
-            return PlayerPrefs.GetInt(transform.GetInstanceID() + prefName).Equals(answer);
+            return PlayerPrefs.GetInt(TransformID + prefName).Equals(answer);
         }
 
         private bool CheckPrefs(in string prefName, in int answer, in Transform targetTr)

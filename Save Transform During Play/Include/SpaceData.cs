@@ -2,14 +2,14 @@
 namespace Rito.Conveniences
 {
     [System.Serializable]
-    public class SpaceData : CommonData
+    public class SpaceData : IJsonData
     {
         public bool isOn;
         public PositionSpace positionSpace;
         public RotationSpace rotationSpace;
         public ScaleSpace scaleSpace;
 
-        public SpaceData(bool on, PositionSpace ps, RotationSpace rs, ScaleSpace ss)
+        public SpaceData(in bool on, in PositionSpace ps, in RotationSpace rs, in ScaleSpace ss)
         {
             isOn = on;
             positionSpace = ps;
