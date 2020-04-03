@@ -28,9 +28,9 @@ namespace Rito.Conveniences
         public bool _on = true;
 
         [Header("Options")]
-        public PositionSpace _positionSpace = default;
-        public RotationSpace _rotationSpace = default;
-        public ScaleSpace    _scaleSpace    = default;
+        public Spaces _positionSpace = default;
+        public Spaces _rotationSpace = default;
+        public Spaces _scaleSpace    = default;
 
         private const int True  = 1;
         private const int False = 0;
@@ -120,10 +120,10 @@ namespace Rito.Conveniences
             if (savedData == null || !enabled || !_on)
                 return;
 
-            savedData.ApplyToTransform(transform, _positionSpace, _rotationSpace, _scaleSpace);
+            savedData.ApplyToTransform(transform, _positionSpace, _rotationSpace);
 
             // Scale - Global인 경우 적용
-            if(_scaleSpace.Equals(ScaleSpace.World))
+            if(_scaleSpace.Equals(Spaces.World))
             {
                 Vector3 savedLossy = savedData.globalScale;
                 Vector3 nowLossy = transform.lossyScale;

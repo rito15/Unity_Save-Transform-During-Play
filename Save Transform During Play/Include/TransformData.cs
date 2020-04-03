@@ -29,14 +29,14 @@ namespace Rito.Conveniences
         }
 
         /// <summary> Struct -> Transform </summary>
-        public void ApplyToTransform(in Transform transform, in PositionSpace posSpace, in RotationSpace rotSpace, in ScaleSpace sclSpace)
+        public void ApplyToTransform(in Transform transform, in Spaces posSpace, in Spaces rotSpace)
         {
-            if (posSpace.Equals(PositionSpace.Local))
+            if (posSpace.Equals(Spaces.Local))
                 transform.localPosition = localPosition;
             else
                 transform.position = globalPosition;
 
-            if (rotSpace.Equals(RotationSpace.Local))
+            if (rotSpace.Equals(Spaces.Local))
                 transform.localRotation = localRotation;
             else
                 transform.rotation = globalRotation;

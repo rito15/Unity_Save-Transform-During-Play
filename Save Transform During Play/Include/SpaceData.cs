@@ -5,11 +5,11 @@ namespace Rito.Conveniences
     public class SpaceData : IJsonData
     {
         public bool isOn;
-        public PositionSpace positionSpace;
-        public RotationSpace rotationSpace;
-        public ScaleSpace scaleSpace;
+        public Spaces positionSpace;
+        public Spaces rotationSpace;
+        public Spaces scaleSpace;
 
-        public SpaceData(in bool on, in PositionSpace ps, in RotationSpace rs, in ScaleSpace ss)
+        public SpaceData(in bool on, in Spaces ps, in Spaces rs, in Spaces ss)
         {
             isOn = on;
             positionSpace = ps;
