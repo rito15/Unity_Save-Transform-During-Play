@@ -19,6 +19,7 @@ namespace Rito.Conveniences
     /// <para/>       (transform.position, transform.rotation, transform.lossyScale)
     /// <para/> 
     /// </summary>
+    [DisallowMultipleComponent]
     [ExecuteInEditMode]
     public class SaveTransformDuringPlay : MonoBehaviour
     {
