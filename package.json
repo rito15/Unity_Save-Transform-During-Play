@@ -1,0 +1,16 @@
+{
+	"name" : "com.rito.savetransformduringplay",
+	"version": "1.0.0",
+	"displayName" :"Save Transform During Play",
+	"description" :"플레이 모드가 종료되었을 때도 트랜스폼의 변경사항을 저장할 수 있게 해주는 컴포넌트를 제공합니다.",
+	"unity": "2018.1",
+	"dependencies": {},
+	"keywords": ["save","transform","playmode"],
+	"author":
+	{
+		"name":"Rito",
+		"email":"ghdtkals15@naver.com",
+		"url":"https://github.com/rito15"
+	},
+	"category": "Unity"
+}

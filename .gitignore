@@ -66,11 +66,9 @@ crashlytics-build.properties
 /[Aa]ssets/Save Transform During Play/Include/Data/*
 /[Aa]ssets/Save Transform During Play/Include/Data.meta
 
-/Save Transform During Play/Include/Data/*
+/Save Transform During Play/Include/Data
 /Save Transform During Play/Include/Data.meta
-LICENSE.meta
-README.md.meta
 
-/*.meta
 /_*
-/Scenes
+Scenes
+Scenes.meta
