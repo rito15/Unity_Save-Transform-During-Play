@@ -7,10 +7,11 @@ namespace Rito.Conveniences
     {
         #region Get Paths
 
-        private static string GetRootPath([System.Runtime.CompilerServices.CallerFilePath] string path = "")
-            => path.Substring(0, path.LastIndexOf('\\') + 1);
+        //private static string GetRootPath([System.Runtime.CompilerServices.CallerFilePath] string path = "")
+        //    => path.Substring(0, path.LastIndexOf('\\') + 1);
+        //private static string FolderPath => GetRootPath() + "Data/";
 
-        private static string FolderPath => GetRootPath() + "Data/";
+        private static string FolderPath => $"{Application.dataPath}_TempData/Save Transform During Play/";
 
         private static string GetFullPath<T>(in int id) where T : IJsonData
         {
